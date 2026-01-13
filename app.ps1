@@ -1,24 +1,49 @@
+# Nasconde la console
+Add-Type -Name Window -Namespace Console -MemberDefinition '
+[DllImport("kernel32.dll")] public static extern IntPtr GetConsoleWindow();
+[DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+'
+[Console.Window]::ShowWindow([Console.Window]::GetConsoleWindow(), 0)
+
 Add-Type -AssemblyName PresentationFramework
 
-$xaml = irm https://raw.githubusercontent.com/Federazione/FederazioneModAnalyzer/main/ui.xaml
-$reader = (New-Object System.Xml.XmlNodeReader $xaml)
+$base = "https://raw.githubusercontent.com/Federazione/FederazioneModAnalyzer/main"
+$xaml = irm "$base/ui.xaml"
+$reader = New-Object System.Xml.XmlNodeReader $xaml
 $Window = [Windows.Markup.XamlReader]::Load($reader)
 
-$LogBox = $Window.FindName("LogBox")
+. "$PSScriptRoot/core/helpers.ps1"
 
-function Write-Log($msg) {
-    $LogBox.AppendText("$msg`n")
-    $LogBox.ScrollToEnd()
+$Log = $Window.FindName("LogBox")
+
+function Log($msg) {
+    $Log.AppendText("$msg`n")
+    $Log.ScrollToEnd()
 }
 
 $Window.FindName("BtnSystem").Add_Click({
-    Write-Log "[SYSTEM] Raccolta informazioni..."
-    . "$PSScriptRoot\core\system.ps1"
+    Log "== SYSTEM INFO =="
+    . "$PSScriptRoot/core/system.ps1"
+})
+
+$Window.FindName("BtnBam").Add_Click({
+    Log "== BAM EXECUTIONS =="
+    . "$PSScriptRoot/core/bam.ps1"
+})
+
+$Window.FindName("BtnUSB").Add_Click({
+    Log "== USB HISTORY =="
+    . "$PSScriptRoot/core/usb.ps1"
 })
 
 $Window.FindName("BtnMods").Add_Click({
-    Write-Log "[MODS] Avvio scansione..."
-    . "$PSScriptRoot\core\mods.ps1"
+    Log "== MODS SCAN =="
+    . "$PSScriptRoot/core/mods.ps1"
+})
+
+$Window.FindName("BtnRecycle").Add_Click({
+    Log "== RECYCLE BIN =="
+    . "$PSScriptRoot/core/recycle.ps1"
 })
 
 $Window.ShowDialog() | Out-Null
