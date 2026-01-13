@@ -1,14 +1,11 @@
-# ===================== CHECK ADMIN =====================
-if (-not ([Security.Principal.WindowsPrincipal] `
-    [Security.Principal.WindowsIdentity]::GetCurrent()
-).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-
+# ===================== CHECK ADMIN CORRETTO =====================
+$principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Richiesta privilegi SYSTEM/ADMIN..." -ForegroundColor Red
-    Start-Process powershell.exe `
-        "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" `
-        -Verb RunAs
+    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
     exit
 }
+
 
 # ===================== INIT =====================
 $ErrorActionPreference = "SilentlyContinue"
